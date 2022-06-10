@@ -22,6 +22,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DiscShop.py" />
+    <Compile Include="DiscInfo.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Images\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="players.txt" />
+    <Content Include="discs.txt" />
+    <Content Include="teams.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
