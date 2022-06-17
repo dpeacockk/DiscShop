@@ -1,144 +1,72 @@
 #!/usr/bin/python3
 import requests
-from collections import namedtuple
+import time
 from bs4 import BeautifulSoup
-import sqlite3 as sl
+import pandas as pd
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait, Select
+from selenium.webdriver.common.by import By
+
 
 class DiscGolfDatabase:
-    con = sl.connect('DiscGolf.db')
     num_discs = 0
-    
-    def __init__(self):
-        #con = sl.connect('DiscGolf.db')
 
-        with self.con:
-            self.con.execute("""
-            CREATE TABLE ProPlayers (
-            team TEXT,
-            rating INTEGER,
-            name TEXT,
-            age INTEGER,
-            primaryHand TEXT,
-            pdgaNum INTEGER,
-            careerEvents INTEGER,
-            careerWins INTEGER,
-            location TEXT
-            );
-            """)
-
-        with self.con:
-            self.con.execute("""
-        CREATE TABLE Discs (
-            name TEXT,
-            speed INTEGER,
-            glide INTEGER,
-            turn INTEGER,
-            fade INTEGER,
-            type TEXT,
-            brand TEXT,
-            stability TEXT,
-            );
-            """)
-
-        with self.con:
-            self.con.execute("""
-        CREATE TABLE Companies (
-            name TEXT,
-            location TEXT,
-            type TEXT,
-            yearFounded INTEGER,
-            );
-            """)
-
-     #does webscraping from https://alldiscs.com/ to autofill single entry of disc
-    def addOneDisc(self):
-
-         sql = 'INSERT INTO Discs (name, speed, glide, turn, fade, type, brand, stability) values(?, ?, ?, ?, ?, ?, ?,?)'
+     #does webscraping from https://alldiscs.com/ to auto fill single entry of disc
+    def addDiscs(self):
+         options = webdriver.ChromeOptions()
+         options.add_argument('--ignore-certificate-errors')
+         options.add_argument('--incognito')
+         options.add_argument('--headless')
+         driver = webdriver.Chrome("chromedriver", chrome_options=options)
          
          url = 'https://alldiscs.com/'
-         data = requests.get(url)
+         driver.get(url)
+         
+         #setting up dataframe with columns
+         page = driver.page_source
+         soup = BeautifulSoup(page, 'lxml')
+         table = soup.find('table', {'id':'table_1'})
+         headers = []
 
-         lst = []
-
-         soup = BeautifulSoup(page.text, 'lxml')
-
-         #finds number of discs for 
-         num_disc_div = soup.find("div", {"id": "table_1_info"})
-         num_disc_string_list = num_disc_div.string.split()
-         self.num_discs = num_disc_string_list[3]
-
-         tab = soup.find("table", attrs={"class": "table1"})
-         tab_data = tab.tbody.find_all("tr")  # contains 2 rows
-
-         for i in range(0,self.num_discs):
-             lst.append(?)       #name
-             lst.append(?)       #speed
-             lst.append(?)       #glide
-             lst.append(?)       #turn
-             lst.append(?)       #fade
-             lst.append(?)       #type
-             lst.append(?)       #brand
-             lst.append(?)       #stability
+         for i in table.find_all('th')[0:7]:
+                   title = i.text.strip()
+                   headers.append(title)
+         df = pd.DataFrame(columns = headers)
+         # print(headers)
+         #clicking Next button and extracting data till its all in the DB
+         for i in range(0,75):
+             time.sleep(1.5)
              
-         lst_tuple = [x for x in zip(*[iter(list)] * 8)]     # *8 because 8 parameters for each disc
-
-         #data = [
-         #       (1, 'Alice', 21),
-         #       (2, 'Bob', 22),
-         #       (3, 'Chris', 23)
-         #   ]
-
-         with self.con:
-            self.con.executemany(sql, lst_tuple)
+             page = driver.page_source #requests.get(url)     #gets HTML from website
+             soup = BeautifulSoup(page, 'lxml')
+             table = soup.find('table', {'id':'table_1'})
+         
+             for row in table.find_all('tr')[2:]:
+                     data = row.find_all('td')[0:7]
+                     row_data = [td.text.strip() for td in data]
+                     length = len(df)
+                     df.loc[length] = row_data
+                     # print(row_data)   
+             elm = driver.find_element_by_id('table_1_next')
+             # if 'inactive' or 'disabled' in elm.get_attribute('class'):
+             #      break;
+             elm.click()
+             
+         df.to_pickle("./DiscDatabase.pkl")
          return
 
 
-        #adds all discs to Discs table
-    def addDiscs():
-
-        return
-
-
-        #does webscraping from ____________________________ to autofill single entry of pro player
-    def addOnePro(self):
-        sql = 'INSERT INTO Companies (id, name, age) values(?, ?, ?)'
-        data = [
-                (1, 'Alice', 21),
-                (2, 'Bob', 22),
-                (3, 'Chris', 23)
-            ]
-        with self.con:
-            self.con.executemany(sql, data)
-        return
-
-
-        #adds all pros to Pros table
+    #does webscraping from ____________________________ to autofill single entry of pro player
     def addPros():
 
         return
 
 
-        #does webscraping from ____________________________ to autofill database of disc golf teams 
-    def addOneCompany(self):
-        sql = 'INSERT INTO ProPlayers (id, name, age) values(?, ?, ?)'
-        data = [
-                (1, 'Alice', 21),
-                (2, 'Bob', 22),
-                (3, 'Chris', 23)
-            ]
-        with self.con:
-            self.con.executemany(sql, data)
-        return
-
-
-        #adds all companies to Companies table
+    #does webscraping from ____________________________ to autofill database of disc golf teams 
+    #adds all companies to Companies table
     def addCompanies():
 
         return
-
-
-
-
 
 
 
@@ -223,5 +151,12 @@ def calcStability(turn, fade):
         return 'understable'
 
 
-
-
+def calcType(speed):
+    if 0 < speed <= 3:
+        return 'Putt and Approach'
+    if 3 < speed <= 5:
+        return 'Mid Range'
+    if 5 < speed <= 8:
+        return 'Fairway Driver'
+    if speed > 8:
+        return 'Distance Driver'

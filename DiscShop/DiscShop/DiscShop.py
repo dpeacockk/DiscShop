@@ -3,25 +3,18 @@
 import os
 import requests
 from bs4 import BeautifulSoup
-import DiscInfo
 from tkinter import *
-import sqlite3 as sl
+from DiscInfo import DiscGolfDatabase
+import pandas as pd
 
 
-con = sl.connect('DiscGolf.db')
 
-#creating tables in DiscGolf database 
-#https://towardsdatascience.com/do-you-know-python-has-a-built-in-database-d553989c87bd refer to this
-with con:
-    con.execute("""
-        CREATE TABLE USER (
-            id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-            name TEXT,
-            age INTEGER
-        );
-    """)
-
-
+# db = DiscGolfDatabase()
+# db.addDiscs()
+disc_db = pd.read_pickle("./DiscDatabase.pkl")
+print(disc_db)
+#pros_db = pd.read_pickle("./ProsDatabase.pkl")
+#companies_db = pd.read_pickle("./CompaniesDatabase.pkl")
 
 
 
