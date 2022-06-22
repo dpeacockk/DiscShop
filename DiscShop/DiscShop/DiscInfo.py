@@ -7,7 +7,6 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.common.by import By
 
-
 class DiscGolfDatabase:
     num_discs = 0
 
@@ -93,63 +92,93 @@ class DiscGolfDatabase:
         #print(pdga_nums)
         #rows = body.find_elements_by_tag_name("tr")
         
-        #Gathers data for top 25 pros -------(MPO)--------
+        #Gathers data for top 25 pros ----------------(MPO)----------------
         for i in range(0,25):
-            time.sleep(1.25)
+            time.sleep(.5)
             
             #use links within table to open up pro player web page
-            driver.find_element_by_partial_link_text(names[i][0:8]).click()
-            time.sleep(1)
+            driver.find_element_by_partial_link_text(names[i][0:9]).click()
+            time.sleep(.5)
             
             #add data to databases
             name = names[i]
             pdga_num = pdga_nums[i]
-            location = a
-            curr_rating =a 
-            carr_earn = a
-            carr_wins = a
-            tour_rank = a
+            player_html = driver.find_element_by_class_name("player-info").text
+            s = player_html.split('\n')
+            #print(s)
+            for line in s:
+                if line.split()[0] == "Location:":
+                    location = line.split(maxsplit=1)[1]
+                elif line.split()[0] == "Career":
+                     if line.split()[1] == "Wins:":
+                         car_wins = line.split()[2]
+                     if line.split()[1] == "Earnings:":
+                         carr_earn = line.split()[2]
+                elif line.split()[0] == "Current":
+                    curr_rating = str(line.split()[2]) + " Rated"
+                elif line.split()[0] == "United":
+                    tour_rank = line.split()[4]
             
             #adding all saved data to the dataframe
-            row_data = [name, carr_earn, location, carr_wins, tour_rank, curr_rating, pdga_num]
-            length = len(df)
-            df.loc[length] = row_data
+            row_data = [name, carr_earn, location, car_wins, tour_rank, curr_rating, pdga_num]
+            #''' v v v for testing v v v '''
+            #print(row_data)
+            length = len(df_MPO)
+            df_MPO.loc[length] = row_data
             
             driver.back() #goes back to top 25 page
-            
-        print(df_MPO)   
-        #df_MPO.to_pickle("./MPODatabase.pkl")
         
         
-        #---------------FPO table-------------
-        table = soup.find('table', {'class':'world-FPO'}) 
+        #---------------------- FPO database --------------------------
+        table = driver.find_element_by_class_name('world-FPO') 
+        body = table.find_element_by_tag_name('tbody')
+        cells = body.find_elements_by_tag_name('td')
+        
+        names = []
+        pdga_nums = []
+        for cell in cells:
+            if(len(cell.text) > 7):
+                n = cell.text
+                names.append(n.partition("\n")[0])
+                pdga_nums.append(n.partition("\n")[-1])
+        #Gathers data for top 25 pros -------(MPO)--------
         for i in range(0,25):
-            time.sleep(1.5)
+            time.sleep(.5)
             
-            elm = driver.find_elements_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div/div/div/div/div/div/div[2]/div[1]/table/tbody/tr[' + str(i) + ']/td[2]/div/a')
-            elm.click()
+            #use links within table to open up pro player web page
+            driver.find_element_by_partial_link_text(names[i][0:9]).click()
+            time.sleep(.5)
             
             #add data to databases
-            temp_str = driver.find_elements_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[1]/div/h1')
-            
-            name = temp_str.rsplit(' ', 1)[0]
-            pdga_num = temp_str.split()[-1]
-            location = driver.get_element_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[7]/div/ul/li[1]/a').text
-            curr_rating = driver.get_element_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[7]/div/ul/li[6]/text()').text
-            carr_earn = driver.get_element_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[7]/div/ul/li[9]/text()').text
-            carr_wins = driver.get_element_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[7]/div/ul/li[8]/a').text
-            tour_rank = driver.get_element_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[7]/div/ul/li[10]/a').text
+            name = names[i]
+            pdga_num = pdga_nums[i]
+            player_html = driver.find_element_by_class_name("player-info").text
+            s = player_html.split('\n')
+            #print(s)
+            for line in s:
+                if line.split()[0] == "Location:":
+                    location = line.split(maxsplit=1)[1]
+                elif line.split()[0] == "Career":
+                     if line.split()[1] == "Wins:":
+                         car_wins = line.split()[2]
+                     if line.split()[1] == "Earnings:":
+                         carr_earn = line.split()[2]
+                elif line.split()[0] == "Current":
+                    curr_rating = str(line.split()[2]) + " Rated"
+                elif line.split()[0] == "United":
+                    tour_rank = line.split()[4]
             
             #adding all saved data to the dataframe
-            row_data = [name, carr_earn, location, carr_wins, tour_rank, curr_rating, pdga_num]
-            length = len(df)
-            df.loc[length] = row_data
+            row_data = [name, carr_earn, location, car_wins, tour_rank, curr_rating, pdga_num]
+            #''' v v v for testing v v v '''
+            #print(row_data)
+            length = len(df_FPO)
+            df_FPO.loc[length] = row_data
             
             driver.back() #goes back to top 25 page
-            
-            
-        #df_FPO.to_pickle("./FPODatabase.pkl")
-        
+              
+        df_MPO.to_pickle("./MPODatabase.pkl")    
+        df_FPO.to_pickle("./FPODatabase.pkl")
         driver.close()
         return
 
