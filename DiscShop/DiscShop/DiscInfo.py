@@ -53,18 +53,110 @@ class DiscGolfDatabase:
              elm.click()
              
          df.to_pickle("./DiscDatabase.pkl")
+         driver.close()
          return
 
 
-    #does webscraping from ____________________________ to autofill single entry of pro player
-    def addPros():
-
+    #does webscraping from https://www.pdga.com/united-states-tour-ranking to autofill single entry of pro player
+    def addPros(self):
+        #MPO database
+        options = webdriver.ChromeOptions()
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--incognito')
+        options.add_argument('--headless')
+        driver = webdriver.Chrome("chromedriver", chrome_options=options)
+         
+        url = 'https://www.pdga.com/united-states-tour-ranking'
+        driver.get(url)
+        
+        #setting up data frame with headers
+        headers = ['Name', 'Career Earnings', 'Location', 'Career Wins', 'US Tour Rank', 'Current Rating', 'PDGA Number']
+        
+        df_MPO = pd.DataFrame(columns = headers)
+        df_FPO = pd.DataFrame(columns = headers)
+        
+        #get MPO data from table
+        page = driver.page_source 
+        soup = BeautifulSoup(page, 'lxml')
+        table = driver.find_element_by_class_name('world-MPO') 
+        body = table.find_element_by_tag_name('tbody')
+        cells = body.find_elements_by_tag_name('td')
+        
+        names = []
+        pdga_nums = []
+        for cell in cells:
+            if(len(cell.text) > 7):
+                n = cell.text
+                names.append(n.partition("\n")[0])
+                pdga_nums.append(n.partition("\n")[-1])
+        #print(names)
+        #print(pdga_nums)
+        #rows = body.find_elements_by_tag_name("tr")
+        
+        #Gathers data for top 25 pros -------(MPO)--------
+        for i in range(0,25):
+            time.sleep(1.25)
+            
+            #use links within table to open up pro player web page
+            driver.find_element_by_partial_link_text(names[i][0:8]).click()
+            time.sleep(1)
+            
+            #add data to databases
+            name = names[i]
+            pdga_num = pdga_nums[i]
+            location = a
+            curr_rating =a 
+            carr_earn = a
+            carr_wins = a
+            tour_rank = a
+            
+            #adding all saved data to the dataframe
+            row_data = [name, carr_earn, location, carr_wins, tour_rank, curr_rating, pdga_num]
+            length = len(df)
+            df.loc[length] = row_data
+            
+            driver.back() #goes back to top 25 page
+            
+        print(df_MPO)   
+        #df_MPO.to_pickle("./MPODatabase.pkl")
+        
+        
+        #---------------FPO table-------------
+        table = soup.find('table', {'class':'world-FPO'}) 
+        for i in range(0,25):
+            time.sleep(1.5)
+            
+            elm = driver.find_elements_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div/div/div/div/div/div/div[2]/div[1]/table/tbody/tr[' + str(i) + ']/td[2]/div/a')
+            elm.click()
+            
+            #add data to databases
+            temp_str = driver.find_elements_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[1]/div/h1')
+            
+            name = temp_str.rsplit(' ', 1)[0]
+            pdga_num = temp_str.split()[-1]
+            location = driver.get_element_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[7]/div/ul/li[1]/a').text
+            curr_rating = driver.get_element_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[7]/div/ul/li[6]/text()').text
+            carr_earn = driver.get_element_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[7]/div/ul/li[9]/text()').text
+            carr_wins = driver.get_element_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[7]/div/ul/li[8]/a').text
+            tour_rank = driver.get_element_by_xpath('//*[@id="block-system-main"]/div/div/div/div/div/div[7]/div/ul/li[10]/a').text
+            
+            #adding all saved data to the dataframe
+            row_data = [name, carr_earn, location, carr_wins, tour_rank, curr_rating, pdga_num]
+            length = len(df)
+            df.loc[length] = row_data
+            
+            driver.back() #goes back to top 25 page
+            
+            
+        #df_FPO.to_pickle("./FPODatabase.pkl")
+        
+        driver.close()
         return
 
 
     #does webscraping from ____________________________ to autofill database of disc golf teams 
     #adds all companies to Companies table
-    def addCompanies():
+    def addCompanies(self):
 
         return
 
