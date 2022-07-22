@@ -170,8 +170,6 @@ class DiscGolfDatabase:
             
             #adding all saved data to the dataframe
             row_data = [name, carr_earn, location, car_wins, tour_rank, curr_rating, pdga_num]
-            #''' v v v for testing v v v '''
-            #print(row_data)
             length = len(df_FPO)
             df_FPO.loc[length] = row_data
             
@@ -183,14 +181,177 @@ class DiscGolfDatabase:
         return
 
 
+    #------ADDING EACH DISC GOLF COMPANY INDIVIDUALLY FROM their WEBSITES-----
+    def addDiscraft(self, driver, df):
+        #Static elements for database
+        name = 'Discraft'
+        url_df = 'https://www.discraft.com/'
+        yearEstablished = '1979'
+        location = 'London, Canada'
+        
+        #Variable elements for database
+        url = 'https://www.discraft.com/about-us'
+        driver.get(url)
+        aboutUs = driver.find_element_by_class_name('html-wrapper').text
+        
+        row_data = [name, url_df, yearEstablished, location, aboutUs]
+        length = len(df)
+        df.loc[length] = row_data
+        return
+    
+    
+    def addInnova(self, driver, df):
+        #Static elements for database
+        name = 'Innova'
+        url_df = 'https://www.innovadiscs.com/'
+        yearEstablished = '1983'
+        location = 'Ontario, California, United States'
+        
+        #Variable elements for database
+        url = 'https://www.innovadiscs.com/home/about-us/'
+        driver.get(url)
+        aboutUs = driver.find_element_by_class_name('entry-content').text
+
+        row_data = [name, url_df, yearEstablished, location, aboutUs]
+        length = len(df)
+        df.loc[length] = row_data
+        return
+    
+    
+    def addMVP(self, driver, df):
+        #Static elements for database
+        name = 'MVP'
+        url_df = 'https://mvpdiscsports.com/'
+        yearEstablished = '2010'
+        location = 'Marlette, Michigan, United States'
+        
+        #Variable elements for database
+        url = 'https://mvpdiscsports.com/about/'
+        driver.get(url)
+        aboutUs = driver.find_element_by_class_name('et_pb_text_inner').text
+        
+        row_data = [name, url_df, yearEstablished, location, aboutUs]
+        length = len(df)
+        df.loc[length] = row_data
+        return
+    
+    
+    def addDiscmania(self, driver, df): 
+        #Static elements for database
+        name = 'Discmania'
+        url_df = 'https://www.discmania.net/'
+        yearEstablished = '2006'
+        location = 'Skellefteå, Sweden'
+        
+        #Variable elements for database
+        url = 'https://www.discmania.net/pages/about-us'
+        driver.get(url)
+        aboutUs = driver.find_element_by_xpath('//*[@id="about-us"]/div[5]/section/div/div[2]/p[1]').text
+        
+        row_data = [name, url_df, yearEstablished, location, aboutUs]
+        length = len(df)
+        df.loc[length] = row_data
+        return
+    
+    
+    def addDynamicDiscs(self, driver, df):   
+        #Static elements for database
+        name = 'Dynamic Discs'
+        url_df = 'https://www.dynamicdiscs.com/'
+        yearEstablished = '2005'
+        location = 'Emporia, Kansas, United States'
+        
+        #Variable elements for database
+        url = 'https://www.dynamicdiscs.com/pages/about-us'
+        driver.get(url)
+        aboutUs = driver.find_element_by_class_name('col-md-6').text
+        
+        row_data = [name, url_df, yearEstablished, location, aboutUs]
+        length = len(df)
+        df.loc[length] = row_data
+        return
+    
+    
+    def addLatitude64(self, driver, df):   
+        #Static elements for database
+        name = 'Latitude 64'
+        url_df = 'https://store.latitude64.se/'
+        yearEstablished = '2005'
+        location = 'Skellefteå, Sweden'
+        
+        #Variable elements for database
+        url = 'https://store.latitude64.se/pages/about#:~:text=We%20make%20disc%20golf%20products,forefront%20of%20everything%20we%20do.'
+        driver.get(url)
+        aboutUs = driver.find_element_by_class_name('rte').text
+        
+        row_data = [name, url_df, yearEstablished, location, aboutUs]
+        length = len(df)
+        df.loc[length] = row_data
+        return
+    
+    
+    def addProdigy(self, driver, df):     
+       #Static elements for database
+        name = 'Prodigy Disc'
+        url_df = 'https://www.prodigydisc.com/'
+        yearEstablished = '2013'
+        location = 'Dalton, Georgia, United States'
+        
+        #Variable elements for database
+        url = 'https://www.prodigydisc.com/pages/about-us'
+        driver.get(url)
+        aboutUs = driver.find_element_by_xpath('//*[@id="shopify-section-template--15835338801337__16407947167ed38c63"]/section/div/div/p[2]').text + driver.find_element_by_xpath('//*[@id="shopify-section-template--15835338801337__16407947167ed38c63"]/section/div/div/p[3]').text + driver.find_element_by_xpath('//*[@id="shopify-section-template--15835338801337__16407947167ed38c63"]/section/div/div/p[5]').text
+        
+        
+        row_data = [name, url_df, yearEstablished, location, aboutUs]
+        length = len(df)
+        df.loc[length] = row_data
+        return
+    
+    
+    def addKastaplast(self, driver, df):      
+        #Static elements for database
+        name = 'Kastaplast'
+        url_df = 'https://www.kastaplast.se/'
+        yearEstablished = '2011'
+        location = 'Stockholm, Sweden'
+        
+        #Variable elements for database
+        url = 'https://www.kastaplast.se/about/'
+        driver.get(url)
+        aboutUs = driver.find_element_by_class_name('wrap').text
+        
+        row_data = [name, url_df, yearEstablished, location, aboutUs]
+        length = len(df)
+        df.loc[length] = row_data
+        return
+     
     #does webscraping from ____________________________ to autofill database of disc golf teams 
     #adds all companies to Companies table
     def addCompanies(self):
-
+        options = webdriver.ChromeOptions()
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--incognito')
+        options.add_argument('--headless')
+        driver = webdriver.Chrome("chromedriver", chrome_options=options)
+        
+        #setting up data frame with headers
+        headers = ['Name', 'URL', 'Year Established', 'Location', 'About Us']
+        df = pd.DataFrame(columns = headers)
+        
+        self.addDiscraft(driver, df)
+        self.addInnova(driver, df)
+        self.addMVP(driver, df)
+        self.addDiscmania(driver, df)
+        self.addDynamicDiscs(driver, df)
+        self.addLatitude64(driver, df)
+        self.addProdigy(driver, df)
+        self.addKastaplast(driver, df)
+                
+        df.to_pickle("./Companies.pkl")
         return
 
-
-
+    
 
 
 

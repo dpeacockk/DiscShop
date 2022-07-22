@@ -14,4 +14,41 @@
 	<natures>
 		<nature>org.python.pydev.pythonNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>Images/discmania.jpg</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Users/baedo/Downloads/discmania.jpg</locationURI>
+		</link>
+		<link>
+			<name>Images/discraft.jpg</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Users/baedo/Downloads/discraft.jpg</locationURI>
+		</link>
+		<link>
+			<name>Images/dynamicdiscs.png</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Users/baedo/Downloads/dynamicdiscs.png</locationURI>
+		</link>
+		<link>
+			<name>Images/innova.jpg</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Users/baedo/Downloads/innova.jpg</locationURI>
+		</link>
+		<link>
+			<name>Images/kastaplast.png</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Users/baedo/Downloads/kastaplast.png</locationURI>
+		</link>
+		<link>
+			<name>Images/latitude64.png</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Users/baedo/Downloads/latitude64.png</locationURI>
+		</link>
+		<link>
+			<name>Images/prodigy.jpg</name>
+			<type>1</type>
+			<locationURI>PARENT-5-PROJECT_LOC/Users/baedo/Downloads/prodigy.jpg</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
