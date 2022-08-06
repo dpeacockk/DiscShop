@@ -19,7 +19,7 @@ companies_db = pd.read_pickle("./Companies.pkl")
 #initializing pygame
 pygame.init()
 SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 1000
+SCREEN_HEIGHT = 675
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Main Menu")
 
@@ -45,36 +45,42 @@ quit_img = pygame.image.load("./images/rcLxML7Ri.png").convert_alpha()
 back_img = pygame.image.load("./images/PngItem_198377.png").convert_alpha()
  
 #Creating button instances
-quit_button = button.Button(0, 0, quit_img, .0125)
-back_button = button.Button(500, 200, back_img, .1)
-pros_button = button.Button(500, 300, pros_img, 1)
-discs_button = button.Button(500, 400, shop_img, 1)
-companies_button = button.Button(500, 500, companies_img, 1)
+quit_button = button.Button(10, 10, quit_img, .01)
+back_button = button.Button(10, 10, back_img, .25)
+pros_button = button.Button(400, 400, pros_img, 1)
+discs_button = button.Button(400, 300, shop_img, 1)
+companies_button = button.Button(400, 500, companies_img, 1)
  
 #Application loop
 run = True
-
 while run:
     screen.blit(background, (0, 0))
-    #Quit
-    if quit_button.draw(screen):
-        run = False
-        
+    
     #Main Menu
-    if back_button.draw(screen):
-        menu_state = "main"
+    if menu_state == "main":
+        screen.blit(title_img, (150,100))
         
-    #Professional Players menu
-    if pros_button.draw(screen):
-        menu_state = "pros"
-    
-    #Companies Menu
-    if companies_button.draw(screen):
-        menu_state = "companies"
-    
-    #Discs Menu
-    if discs_button.draw(screen):
-        menu_state = "discs"
+        #Quit
+        if quit_button.draw(screen):
+            run = False
+        #Professional Players menu
+        if pros_button.draw(screen):
+            menu_state = "pros"
+        
+        #Companies Menu
+        if companies_button.draw(screen):
+            menu_state = "companies"
+        
+        #Discs Menu
+        if discs_button.draw(screen):
+            menu_state = "discs"
+            
+    #Not main menu screen  
+    else:
+        if back_button.draw(screen):
+            pygame.time.wait(200)
+            menu_state = "main"
+   
     
     #event handler
     for event in pygame.event.get():
