@@ -46,7 +46,7 @@ back_img = pygame.image.load("./images/PngItem_198377.png").convert_alpha()
  
 #Creating button instances
 quit_button = button.Button(10, 10, quit_img, .01)
-back_button = button.Button(10, 10, back_img, .25)
+back_button = button.Button(10, 10, back_img, .1)
 pros_button = button.Button(400, 400, pros_img, 1)
 discs_button = button.Button(400, 300, shop_img, 1)
 companies_button = button.Button(400, 500, companies_img, 1)
@@ -54,6 +54,7 @@ companies_button = button.Button(400, 500, companies_img, 1)
 #Application loop
 run = True
 while run:
+    white = (253, 244, 220)
     screen.blit(background, (0, 0))
     
     #Main Menu
@@ -75,8 +76,10 @@ while run:
         if discs_button.draw(screen):
             menu_state = "discs"
             
+            
     #Not main menu screen  
     else:
+        screen.fill(white)
         if back_button.draw(screen):
             pygame.time.wait(200)
             menu_state = "main"
