@@ -6,11 +6,46 @@ import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.common.by import By
+import urllib
+import shutil
+import os
+import glob
+
 
 class DiscGolfDatabase:
     num_discs = 0
+    
+    #function that moves disc images into disc-images folder
+    def moveDiscImage(self, filename):
+        src_folder = r"C:\UMich\Personal Projects\DiscShop\DiscShop\DiscShop\\"
+        dst_folder = r"C:\UMich\Personal Projects\DiscShop\DiscShop\DiscShop\disc-Images\\"
+        shutil.move(src_folder + filename, dst_folder + filename)
+        print("Moved: " + filename)
+        return
+
 
      #does webscraping from https://alldiscs.com/ to auto fill single entry of disc
+    def addInfiniteDiscsData(self,driver, discName):
+        element = driver.find_element_by_xpath("/html/body/div[1]/main/div/div/div/div[2]/div/div/div[5]/table/tbody/tr[1]/td[2]/a")
+        link = element.get_attribute('href')
+        driver.get(link)    #driver enters infinitediscs.com
+        
+        #open file in write and binary mode
+        discName = discName.replace(" ","")
+        file_name = discName + '.png'
+        
+        with open(file_name, 'wb') as file:      
+            #identify image to be captured
+            l = driver.find_element_by_xpath('/html/body/form/section[2]/div/main/div[1]/div[2]/article[1]/a/img')
+            #write file
+            file.write(l.screenshot_as_png)
+            
+        #Moving file to disc-images folder
+        self.moveDiscImage(file_name)          
+        driver.back()
+        sleep(1)
+        return
+     
     def addDiscs(self):
          options = webdriver.ChromeOptions()
          options.add_argument('--ignore-certificate-errors')
@@ -31,11 +66,11 @@ class DiscGolfDatabase:
                    title = i.text.strip()
                    headers.append(title)
          df = pd.DataFrame(columns = headers)
-         # print(headers)
+         print(headers)
+         
          #clicking Next button and extracting data till its all in the DB
          for i in range(0,75):
              time.sleep(1.5)
-             
              page = driver.page_source #requests.get(url)     #gets HTML from website
              soup = BeautifulSoup(page, 'lxml')
              table = soup.find('table', {'id':'table_1'})
@@ -43,8 +78,12 @@ class DiscGolfDatabase:
              for row in table.find_all('tr')[2:]:
                      data = row.find_all('td')[0:7]
                      row_data = [td.text.strip() for td in data]
+                     discName = row_data[1]
                      length = len(df)
                      df.loc[length] = row_data
+                     ### ADD INIFINITE DISCS DATA--v
+                     self.addInfiniteDiscsData(driver, discName)
+                     
                      # print(row_data)   
              elm = driver.find_element_by_id('table_1_next')
              # if 'inactive' or 'disabled' in elm.get_attribute('class'):

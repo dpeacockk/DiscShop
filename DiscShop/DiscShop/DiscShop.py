@@ -3,11 +3,11 @@
 import os
 import requests
 from bs4 import BeautifulSoup
-#from tkinter import *
 import pygame
 import button
 from DiscInfo import DiscGolfDatabase
 import pandas as pd
+import webbrowser       #import web-browser for opening links in Disc Shop
 
 
 #Loading in the databases
