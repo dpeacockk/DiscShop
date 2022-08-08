@@ -9,12 +9,52 @@ from selenium.webdriver.common.by import By
 import urllib
 import shutil
 import os
-import glob
-
+from urllib.request import urlretrieve
 
 class DiscGolfDatabase:
     num_discs = 0
     
+    def extract_img_link(self,table):
+        img_srcs = []
+        html = table.get_attribute('innerHTML')
+        soup = BeautifulSoup(html, 'html.parser')      
+        #find all images
+        all_imgs = soup.find_all('img')
+        for image in all_imgs:
+            img_srcs.append(image['src'])
+        return img_srcs
+    
+    
+    def saveAllProImages(self, table, names):
+        # extracting image link
+        img_srcs = self.extract_img_link(table)
+        
+        #creating file names
+        file_names = []
+        for name in names:
+            name = name.replace(" ","")
+            file_names.append(name + '.png')
+            
+        #downloading the images
+        src_folder = r"C:\UMich\Personal Projects\DiscShop\DiscShop\DiscShop\\"
+        dst_folder = r"C:\UMich\Personal Projects\DiscShop\DiscShop\DiscShop\pros-Images\\"
+        
+        for i in range(0,len(img_srcs)):
+            img_src = "https://www.pdga.com" + img_srcs[i]
+            file_name = file_names[i]
+            response = requests.get(img_src, stream=True)
+            with open(file_name, 'wb') as out_file:
+                shutil.copyfileobj(response.raw, out_file)
+            shutil.move(src_folder + file_name, dst_folder + file_name)
+            del response
+            print("Moved: " + file_name)
+
+        
+        #Moving file to pros-images folder and 
+        #for filename in file_names: 
+        #    
+        return
+        
     #function that moves disc images into disc-images folder
     def moveDiscImage(self, filename):
         src_folder = r"C:\UMich\Personal Projects\DiscShop\DiscShop\DiscShop\\"
@@ -30,7 +70,6 @@ class DiscGolfDatabase:
         link = element.get_attribute('href')
         driver.get(link)    #driver enters infinitediscs.com
         
-        #open file in write and binary mode
         discName = discName.replace(" ","")
         file_name = discName + '.png'
         
@@ -127,20 +166,21 @@ class DiscGolfDatabase:
                 n = cell.text
                 names.append(n.partition("\n")[0])
                 pdga_nums.append(n.partition("\n")[-1])
-        #print(names)
-        #print(pdga_nums)
-        #rows = body.find_elements_by_tag_name("tr")
         
-        #Gathers data for top 25 pros ----------------(MPO)----------------
+        #save all MPO images
+        self.saveAllProImages(table, names)                    
+        
+        #Gathers data for top 25 pros  ----------------(MPO)----------------
         for i in range(0,25):
             time.sleep(.5)
             
             #use links within table to open up pro player web page
             driver.find_element_by_partial_link_text(names[i][0:9]).click()
-            time.sleep(.5)
+            time.sleep(.75)
             
             #add data to databases
             name = names[i]
+            
             pdga_num = pdga_nums[i]
             player_html = driver.find_element_by_class_name("player-info").text
             s = player_html.split('\n')
@@ -168,7 +208,7 @@ class DiscGolfDatabase:
             driver.back() #goes back to top 25 page
         
         
-        #---------------------- FPO database --------------------------
+        #----------------------------- FPO database -----------------------------------
         table = driver.find_element_by_class_name('world-FPO') 
         body = table.find_element_by_tag_name('tbody')
         cells = body.find_elements_by_tag_name('td')
@@ -180,13 +220,17 @@ class DiscGolfDatabase:
                 n = cell.text
                 names.append(n.partition("\n")[0])
                 pdga_nums.append(n.partition("\n")[-1])
+
+        #saves all images of FPO pros
+        self.saveAllProImages(table, names)                    
+
         #Gathers data for top 25 pros -------(MPO)--------
         for i in range(0,25):
             time.sleep(.5)
             
             #use links within table to open up pro player web page
             driver.find_element_by_partial_link_text(names[i][0:9]).click()
-            time.sleep(.5)
+            time.sleep(.75)
             
             #add data to databases
             name = names[i]
