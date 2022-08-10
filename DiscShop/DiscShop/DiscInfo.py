@@ -6,6 +6,7 @@ import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
 import urllib
 import shutil
 import os
@@ -47,12 +48,8 @@ class DiscGolfDatabase:
                 shutil.copyfileobj(response.raw, out_file)
             shutil.move(src_folder + file_name, dst_folder + file_name)
             del response
-            print("Moved: " + file_name)
-
-        
-        #Moving file to pros-images folder and 
-        #for filename in file_names: 
-        #    
+            print("Moved: " + file_name) 
+              
         return
         
     #function that moves disc images into disc-images folder
@@ -65,24 +62,59 @@ class DiscGolfDatabase:
 
 
      #does webscraping from https://alldiscs.com/ to auto fill single entry of disc
-    def addInfiniteDiscsData(self,driver, discName):
-        element = driver.find_element_by_xpath("/html/body/div[1]/main/div/div/div/div[2]/div/div/div[5]/table/tbody/tr[1]/td[2]/a")
+    def addInfiniteDiscsData(self,driver, discName, row_data):
+        time.sleep(3)
+        element = driver.find_element_by_partial_link_text(discName)
         link = element.get_attribute('href')
+        
+        #exit if the link is not infinite discs
+        if "infinitediscs.com" not in link:
+            description = "none"
+            pricing = -1
+            in_stock = False
+            url = link
+            row_data.append(in_stock)
+            row_data.append(pricing)
+            row_data.append(description)
+            row_data.append(url)
+            return
+            
         driver.get(link)    #driver enters infinitediscs.com
         
+        #adding disc images
         discName = discName.replace(" ","")
         file_name = discName + '.png'
-        
         with open(file_name, 'wb') as file:      
             #identify image to be captured
             l = driver.find_element_by_xpath('/html/body/form/section[2]/div/main/div[1]/div[2]/article[1]/a/img')
             #write file
-            file.write(l.screenshot_as_png)
-            
+            file.write(l.screenshot_as_png) 
         #Moving file to disc-images folder
-        self.moveDiscImage(file_name)          
+        self.moveDiscImage(file_name)  
+        
+        #adding out of stock, pricing, description, url
+        url = driver.current_url
+        print(driver.current_url)
+
+        page = driver.page_source #requests.get(url)     #gets HTML from website
+        soup = BeautifulSoup(page, 'lxml')
+        table = soup.find('table', {'class':'table'})
+        if table.find_all('td', {'class':'success'}):
+            pricing = table.find_all('td', {'class':'success'}).text
+            in_stock = True
+        else:
+            pricing = -1
+            in_stock = False
+        description = driver.find_element_by_xpath('/html/body/form/section[2]/div/main/div[1]/div[2]/article[2]').text.split("\n")[1]
+                
+        #adding row data
+        row_data.append(in_stock)
+        row_data.append(pricing)
+        row_data.append(description)
+        row_data.append(url) 
+        print(row_data) # for testing
         driver.back()
-        sleep(1)
+        time.sleep(3)
         return
      
     def addDiscs(self):
@@ -90,8 +122,8 @@ class DiscGolfDatabase:
          options.add_argument('--ignore-certificate-errors')
          options.add_argument('--incognito')
          options.add_argument('--headless')
-         driver = webdriver.Chrome("chromedriver", chrome_options=options)
-         
+         driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=options)
+
          url = 'https://alldiscs.com/'
          driver.get(url)
          
@@ -104,12 +136,19 @@ class DiscGolfDatabase:
          for i in table.find_all('th')[0:7]:
                    title = i.text.strip()
                    headers.append(title)
+                   
+         #adding additional infinite discs info headers
+         headers.append('in stock')
+         headers.append('price')
+         headers.append('description')
+         headers.append('url')
+
          df = pd.DataFrame(columns = headers)
          print(headers)
          
          #clicking Next button and extracting data till its all in the DB
          for i in range(0,75):
-             time.sleep(1.5)
+             time.sleep(2)
              page = driver.page_source #requests.get(url)     #gets HTML from website
              soup = BeautifulSoup(page, 'lxml')
              table = soup.find('table', {'id':'table_1'})
@@ -118,10 +157,11 @@ class DiscGolfDatabase:
                      data = row.find_all('td')[0:7]
                      row_data = [td.text.strip() for td in data]
                      discName = row_data[1]
+                     ### ADD INIFINITE DISCS DATA--v
+                     self.addInfiniteDiscsData(driver, discName,row_data)
                      length = len(df)
                      df.loc[length] = row_data
-                     ### ADD INIFINITE DISCS DATA--v
-                     self.addInfiniteDiscsData(driver, discName)
+                     
                      
                      # print(row_data)   
              elm = driver.find_element_by_id('table_1_next')
