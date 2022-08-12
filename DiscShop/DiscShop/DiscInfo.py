@@ -11,6 +11,7 @@ import urllib
 import shutil
 import os
 from urllib.request import urlretrieve
+import validators
 
 class DiscGolfDatabase:
     num_discs = 0
@@ -62,13 +63,13 @@ class DiscGolfDatabase:
 
 
      #does webscraping from https://alldiscs.com/ to auto fill single entry of disc
-    def addInfiniteDiscsData(self,driver, discName, row_data):
+    def addInfiniteDiscsData(self,driver, discName, row_data, driver2):
         time.sleep(3)
         element = driver.find_element_by_partial_link_text(discName)
         link = element.get_attribute('href')
         
         #exit if the link is not infinite discs
-        if "infinitediscs.com" not in link:
+        if "infinitediscs.com" not in link and validators.url(link):
             description = "none"
             pricing = -1
             in_stock = False
@@ -78,25 +79,36 @@ class DiscGolfDatabase:
             row_data.append(description)
             row_data.append(url)
             return
-            
-        driver.get(link)    #driver enters infinitediscs.com
+
+        driver2.get(link)    #driver enters infinitediscs.com
+        time.sleep(2.5)
+        if driver2.current_url == "https://infinitediscs.com/Page-Not-Found":
+            description = "none"
+            pricing = -1
+            in_stock = False
+            url = link
+            row_data.append(in_stock)
+            row_data.append(pricing)
+            row_data.append(description)
+            row_data.append(url)
+            return
         
         #adding disc images
         discName = discName.replace(" ","")
         file_name = discName + '.png'
         with open(file_name, 'wb') as file:      
             #identify image to be captured
-            l = driver.find_element_by_xpath('/html/body/form/section[2]/div/main/div[1]/div[2]/article[1]/a/img')
+            l = driver2.find_element_by_xpath('/html/body/form/section[2]/div/main/div[1]/div[2]/article[1]/a/img')
             #write file
             file.write(l.screenshot_as_png) 
         #Moving file to disc-images folder
         self.moveDiscImage(file_name)  
         
         #adding out of stock, pricing, description, url
-        url = driver.current_url
-        print(driver.current_url)
+        url = driver2.current_url
+        #print(driver2.current_url)
 
-        page = driver.page_source #requests.get(url)     #gets HTML from website
+        page = driver2.page_source #requests.get(url)     #gets HTML from website
         soup = BeautifulSoup(page, 'lxml')
         table = soup.find('table', {'class':'table'})
         if table.find_all('td', {'class':'success'}):
@@ -105,7 +117,7 @@ class DiscGolfDatabase:
         else:
             pricing = -1
             in_stock = False
-        description = driver.find_element_by_xpath('/html/body/form/section[2]/div/main/div[1]/div[2]/article[2]').text.split("\n")[1]
+        description = driver2.find_element_by_xpath('/html/body/form/section[2]/div/main/div[1]/div[2]/article[2]').text.split("\n")[1]
                 
         #adding row data
         row_data.append(in_stock)
@@ -113,7 +125,6 @@ class DiscGolfDatabase:
         row_data.append(description)
         row_data.append(url) 
         print(row_data) # for testing
-        driver.back()
         time.sleep(3)
         return
      
@@ -123,6 +134,7 @@ class DiscGolfDatabase:
          options.add_argument('--incognito')
          options.add_argument('--headless')
          driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=options)
+         driver2 = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=options)
 
          url = 'https://alldiscs.com/'
          driver.get(url)
@@ -148,7 +160,7 @@ class DiscGolfDatabase:
          
          #clicking Next button and extracting data till its all in the DB
          for i in range(0,75):
-             time.sleep(2)
+             time.sleep(3)
              page = driver.page_source #requests.get(url)     #gets HTML from website
              soup = BeautifulSoup(page, 'lxml')
              table = soup.find('table', {'id':'table_1'})
@@ -158,19 +170,17 @@ class DiscGolfDatabase:
                      row_data = [td.text.strip() for td in data]
                      discName = row_data[1]
                      ### ADD INIFINITE DISCS DATA--v
-                     self.addInfiniteDiscsData(driver, discName,row_data)
+                     self.addInfiniteDiscsData(driver, discName,row_data,driver2)
                      length = len(df)
                      df.loc[length] = row_data
-                     
-                     
                      # print(row_data)   
              elm = driver.find_element_by_id('table_1_next')
-             # if 'inactive' or 'disabled' in elm.get_attribute('class'):
-             #      break;
              elm.click()
              
          df.to_pickle("./DiscDatabase.pkl")
          driver.close()
+         driver2.close()
+
          return
 
 
