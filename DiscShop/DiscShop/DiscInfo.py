@@ -12,6 +12,7 @@ import shutil
 import os
 from urllib.request import urlretrieve
 import validators
+from _overlapped import NULL
 
 class DiscGolfDatabase:
     num_discs = 0
@@ -58,13 +59,12 @@ class DiscGolfDatabase:
         src_folder = r"C:\UMich\Personal Projects\DiscShop\DiscShop\DiscShop\\"
         dst_folder = r"C:\UMich\Personal Projects\DiscShop\DiscShop\DiscShop\disc-Images\\"
         shutil.move(src_folder + filename, dst_folder + filename)
-        print("Moved: " + filename)
         return
 
 
      #does webscraping from https://alldiscs.com/ to auto fill single entry of disc
     def addInfiniteDiscsData(self,driver, discName, row_data, driver2):
-        time.sleep(3)
+        time.sleep(4)
         element = driver.find_element_by_partial_link_text(discName)
         link = element.get_attribute('href')
         
@@ -81,8 +81,8 @@ class DiscGolfDatabase:
             return
 
         driver2.get(link)    #driver enters infinitediscs.com
-        time.sleep(2.5)
-        if driver2.current_url == "https://infinitediscs.com/Page-Not-Found":
+        time.sleep(.95) #do not change this number
+        if driver2.current_url == "https://infinitediscs.com/Page-Not-Found" or driver2.current_url == "https://infinitediscs.com/":
             description = "none"
             pricing = -1
             in_stock = False
@@ -93,14 +93,30 @@ class DiscGolfDatabase:
             row_data.append(url)
             return
         
+        
         #adding disc images
-        discName = discName.replace(" ","")
+        discName = discName.replace(" ","").replace('"','').replace('/','')
         file_name = discName + '.png'
-        with open(file_name, 'wb') as file:      
-            #identify image to be captured
-            l = driver2.find_element_by_xpath('/html/body/form/section[2]/div/main/div[1]/div[2]/article[1]/a/img')
-            #write file
-            file.write(l.screenshot_as_png) 
+        
+        #try:-----------------------------------
+        
+        #except:-------------------------------------
+
+        #checking to see if there are multiple images in infinitediscs page
+        s = driver2.find_elements_by_id("rslides1_s0")
+        if len(s) > 0:
+            with open(file_name, 'wb') as file:      
+                #identify image to be captured
+                l = driver2.find_element_by_xpath('/html/body/form/section[2]/div/main/div[1]/div[2]/article[1]/div[2]/ul/li[1]/a/div/div/img')
+                #write file
+                file.write(l.screenshot_as_png)
+        else: #if there is only 1 image
+            with open(file_name, 'wb') as file:      
+                #identify image to be captured
+                l = driver2.find_element_by_xpath('/html/body/form/section[2]/div/main/div[1]/div[2]/article[1]/a/img')
+                #write file
+                file.write(l.screenshot_as_png) 
+
         #Moving file to disc-images folder
         self.moveDiscImage(file_name)  
         
@@ -111,12 +127,12 @@ class DiscGolfDatabase:
         page = driver2.page_source #requests.get(url)     #gets HTML from website
         soup = BeautifulSoup(page, 'lxml')
         table = soup.find('table', {'class':'table'})
-        if table.find_all('td', {'class':'success'}):
-            pricing = table.find_all('td', {'class':'success'}).text
+        
+        pricing = -1
+        in_stock = False
+        if table.find_all('tr', {'class':'success'}):
+            pricing = table.find('tr', {'class':'success'}).text.split("\n")[2]
             in_stock = True
-        else:
-            pricing = -1
-            in_stock = False
         description = driver2.find_element_by_xpath('/html/body/form/section[2]/div/main/div[1]/div[2]/article[2]').text.split("\n")[1]
                 
         #adding row data
@@ -124,8 +140,8 @@ class DiscGolfDatabase:
         row_data.append(pricing)
         row_data.append(description)
         row_data.append(url) 
-        print(row_data) # for testing
-        time.sleep(3)
+        #print(row_data) # for testing
+        time.sleep(2.3)
         return
      
     def addDiscs(self):
@@ -160,7 +176,7 @@ class DiscGolfDatabase:
          
          #clicking Next button and extracting data till its all in the DB
          for i in range(0,75):
-             time.sleep(3)
+             time.sleep(4)
              page = driver.page_source #requests.get(url)     #gets HTML from website
              soup = BeautifulSoup(page, 'lxml')
              table = soup.find('table', {'id':'table_1'})
@@ -173,7 +189,7 @@ class DiscGolfDatabase:
                      self.addInfiniteDiscsData(driver, discName,row_data,driver2)
                      length = len(df)
                      df.loc[length] = row_data
-                     # print(row_data)   
+                     print(discName)   
              elm = driver.find_element_by_id('table_1_next')
              elm.click()
              
