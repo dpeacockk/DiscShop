@@ -64,7 +64,7 @@ class DiscGolfDatabase:
 
      #does webscraping from https://alldiscs.com/ to auto fill single entry of disc
     def addInfiniteDiscsData(self,driver, discName, row_data, driver2):
-        time.sleep(4)
+        time.sleep(4.75)
         element = driver.find_element_by_partial_link_text(discName)
         link = element.get_attribute('href')
         
@@ -141,7 +141,7 @@ class DiscGolfDatabase:
         row_data.append(description)
         row_data.append(url) 
         #print(row_data) # for testing
-        time.sleep(2.3)
+        time.sleep(2.4)
         return
      
     def addDiscs(self):
@@ -176,7 +176,7 @@ class DiscGolfDatabase:
          
          #clicking Next button and extracting data till its all in the DB
          for i in range(0,75):
-             time.sleep(4)
+             time.sleep(5)
              page = driver.page_source #requests.get(url)     #gets HTML from website
              soup = BeautifulSoup(page, 'lxml')
              table = soup.find('table', {'id':'table_1'})
