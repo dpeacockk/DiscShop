@@ -93,14 +93,9 @@ class DiscGolfDatabase:
             row_data.append(url)
             return
         
-        
         #adding disc images
         discName = discName.replace(" ","").replace('"','').replace('/','')
         file_name = discName + '.png'
-        
-        #try:-----------------------------------
-        
-        #except:-------------------------------------
 
         #checking to see if there are multiple images in infinitediscs page
         s = driver2.find_elements_by_id("rslides1_s0")
@@ -196,7 +191,6 @@ class DiscGolfDatabase:
          df.to_pickle("./DiscDatabase.pkl")
          driver.close()
          driver2.close()
-
          return
 
 
@@ -207,7 +201,7 @@ class DiscGolfDatabase:
         options.add_argument('--ignore-certificate-errors')
         options.add_argument('--incognito')
         options.add_argument('--headless')
-        driver = webdriver.Chrome("chromedriver", chrome_options=options)
+        driver = webdriver.Chrome(ChromeDriverManager().install(), chrome_options=options)
          
         url = 'https://www.pdga.com/united-states-tour-ranking'
         driver.get(url)
