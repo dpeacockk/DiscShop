@@ -9,16 +9,44 @@ from DiscInfo import DiscGolfDatabase
 import pandas as pd
 import webbrowser       #import web-browser for opening links in Disc Shop
 
+#global variables
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 675
+white = (253, 250, 240)
+
 #Disc menu 
+def drawDisc(screen, row):
+    return
 def discMenu(screen):
+    filter = False
+    company = "none"
+    
+    if filter:
+        print("do something")
+    else:
+        print("do something else")
+        
     return
 
+
+def drawPro(screen,row):
+    return
 #Pro menu
 def proMenu(screen):
     return
 
+
+def drawCompany(screen, row, gridSize):
+    for x in range(50, SCREEN_WIDTH-200, gridSize):
+        for y in range(100, SCREEN_HEIGHT-250, gridSize):
+            rect = pygame.Rect(x, y, gridSize, gridSize)
+            pygame.draw.rect(screen, (200, 200, 200), rect, 1)
+    return
 #Companies menu
-def companyMenu(screen):
+def companyMenu(screen, companies_db):
+    gridSize = int(SCREEN_WIDTH / 4.4)
+    for row in companies_db.itertuples():
+        drawCompany(screen,row,gridSize)
     return
 
 #Loading in the databases
@@ -29,8 +57,6 @@ companies_db = pd.read_pickle("./Companies.pkl")
 
 #initializing pygame
 pygame.init()
-SCREEN_WIDTH = 1000
-SCREEN_HEIGHT = 675
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Main Menu")
 
@@ -47,6 +73,7 @@ discraft_logo = pygame.image.load("./images/discraft.jpg").convert_alpha()
 dynamic_logo = pygame.image.load("./images/dynamicdiscs.png").convert_alpha()
 kasta_logo = pygame.image.load("./images/kastaplast.png").convert_alpha()
 discmania_logo = pygame.image.load("./images/discmania.jpg").convert_alpha()
+mvp_logo = pygame.image.load("./images/mvp.png").convert_alpha()
 
 title_img = pygame.image.load("./images/title.png").convert_alpha()
 companies_img = pygame.image.load("./images/button_companies.png").convert_alpha()
@@ -64,7 +91,6 @@ companies_button = button.Button(400, 500, companies_img, 1)
  
 #Application loop
 run = True
-white = (253, 247, 225)
 while run:
     screen.blit(background, (0, 0))
     
@@ -74,8 +100,8 @@ while run:
         
         #Quit
         if quit_button.draw(screen):
-            
             run = False
+            
         #Professional Players menu
         if pros_button.draw(screen):
             menu_state = "pros"
@@ -87,7 +113,6 @@ while run:
         #Discs Menu
         if discs_button.draw(screen):
             menu_state = "discs"
-            filter = "none"
             
            
     #Not main menu screen  
@@ -100,9 +125,9 @@ while run:
         if menu_state == "discs":
             discMenu(screen)
         elif menu_state == "pros":
-            prosMenu(screen)
+            proMenu(screen)
         elif menu_state == "companies":
-            companyMenu(screen)
+            companyMenu(screen, companies_db)
         
     
     #event handler
