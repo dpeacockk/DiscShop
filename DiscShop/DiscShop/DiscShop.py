@@ -9,6 +9,17 @@ from DiscInfo import DiscGolfDatabase
 import pandas as pd
 import webbrowser       #import web-browser for opening links in Disc Shop
 
+#Disc menu 
+def discMenu(screen):
+    return
+
+#Pro menu
+def proMenu(screen):
+    return
+
+#Companies menu
+def companyMenu(screen):
+    return
 
 #Loading in the databases
 disc_db = pd.read_pickle("./DiscDatabase.pkl")
@@ -45,7 +56,7 @@ quit_img = pygame.image.load("./images/rcLxML7Ri.png").convert_alpha()
 back_img = pygame.image.load("./images/PngItem_198377.png").convert_alpha()
  
 #Creating button instances
-quit_button = button.Button(10, 10, quit_img, .01)
+quit_button = button.Button(940, 5, quit_img, .008)
 back_button = button.Button(10, 10, back_img, .1)
 pros_button = button.Button(400, 400, pros_img, 1)
 discs_button = button.Button(400, 300, shop_img, 1)
@@ -53,8 +64,8 @@ companies_button = button.Button(400, 500, companies_img, 1)
  
 #Application loop
 run = True
+white = (253, 247, 225)
 while run:
-    white = (253, 244, 220)
     screen.blit(background, (0, 0))
     
     #Main Menu
@@ -63,6 +74,7 @@ while run:
         
         #Quit
         if quit_button.draw(screen):
+            
             run = False
         #Professional Players menu
         if pros_button.draw(screen):
@@ -75,15 +87,23 @@ while run:
         #Discs Menu
         if discs_button.draw(screen):
             menu_state = "discs"
+            filter = "none"
             
-            
+           
     #Not main menu screen  
     else:
         screen.fill(white)
         if back_button.draw(screen):
-            pygame.time.wait(200)
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
             menu_state = "main"
-   
+            
+        if menu_state == "discs":
+            discMenu(screen)
+        elif menu_state == "pros":
+            prosMenu(screen)
+        elif menu_state == "companies":
+            companyMenu(screen)
+        
     
     #event handler
     for event in pygame.event.get():
@@ -91,6 +111,6 @@ while run:
             run = False
             
     pygame.display.update()
-
+ 
 
 pygame.quit()
